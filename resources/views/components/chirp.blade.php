@@ -26,6 +26,14 @@
                         <span class="text-sm font-semibold">{{ $chirp->user ? $chirp->user->name : 'Anonymous' }}</span>
                         <span class="text-base-content/60">·</span>
                         <span class="text-sm text-base-content/60">{{ $chirp->created_at->diffForHumans() }}</span>
+                        
+                        @if($chirp->moderation_status === 'pending')
+                            <span class="badge badge-warning badge-sm">Under Review</span>
+                        @elseif($chirp->moderation_status === 'rejected')
+                            <span class="badge badge-error badge-sm">Rejected</span>
+                        @else
+                            <span class="badge badge-success badge-sm">Approved</span>
+                        @endif
                     </div>
                 @can('update', $chirp)
                     <div class="flex gap-1">
