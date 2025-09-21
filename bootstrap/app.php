@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'rate.limit.chirps' => \App\Http\Middleware\RateLimitChirps::class,
+            'gemini.rate.limit' => \App\Http\Middleware\CheckGeminiRateLimit::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

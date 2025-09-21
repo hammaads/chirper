@@ -12,9 +12,18 @@ class AIModerationService
      */
     public function __construct(
         private readonly string $apiKey = '',
-        private readonly string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta'
+        private readonly string $baseUrl = 'https://generativelanguage.googleapis.com/v1beta',
+        private readonly ?GeminiRateLimitService $rateLimitService = null
     ) {
         // The API key is set via constructor parameter or config
+    }
+
+    /**
+     * Get the rate limit service instance.
+     */
+    private function getRateLimitService(): GeminiRateLimitService
+    {
+        return $this->rateLimitService ?? app(GeminiRateLimitService::class);
     }
 
     /**
@@ -28,7 +37,20 @@ class AIModerationService
             return $this->fallbackModeration($content);
         }
 
+        // Check if we've hit the daily Gemini API limit
+        $rateLimitService = $this->getRateLimitService();
+        if (! $rateLimitService->canMakeRequest()) {
+            Log::warning('Gemini daily rate limit reached, falling back to basic moderation', [
+                'current_count' => $rateLimitService->getCurrentRequestCount(),
+                'limit' => $rateLimitService->getDailyLimit(),
+            ]);
+
+            return $this->fallbackModeration($content);
+        }
+
         try {
+            // Increment the request counter before making the API call
+            $rateLimitService->incrementRequestCount();
             $response = Http::timeout(30)->post($this->baseUrl.'/models/gemini-2.5-flash-lite:generateContent?key='.$apiKey, [
                 'contents' => [
                     [

@@ -10,9 +10,9 @@ Route::get('/', [ChirpController::class, 'index']);
 
 // Protected routes
 Route::middleware('auth')->group(function () {
-    Route::post('/chirps', [ChirpController::class, 'store'])->middleware('rate.limit.chirps');
+    Route::post('/chirps', [ChirpController::class, 'store'])->middleware(['rate.limit.chirps', 'gemini.rate.limit']);
     Route::get('/chirps/{chirp}/edit', [ChirpController::class, 'edit']);
-    Route::put('/chirps/{chirp}', [ChirpController::class, 'update'])->middleware('rate.limit.chirps');
+    Route::put('/chirps/{chirp}', [ChirpController::class, 'update'])->middleware(['rate.limit.chirps', 'gemini.rate.limit']);
     Route::delete('/chirps/{chirp}', [ChirpController::class, 'destroy']);
 });
 
